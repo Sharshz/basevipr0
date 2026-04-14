@@ -1,8 +1,20 @@
-import { db, handleFirestoreError, OperationType } from '../firebase';
+import { db, storage, handleFirestoreError, OperationType } from '../firebase';
 import { doc, setDoc, getDoc, updateDoc, increment, collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { POIScore, UserProfile, LeaderboardEntry } from '../types';
 
 export const POI_SERVICE = {
+  async uploadAvatar(uid: string, file: File): Promise<string> {
+    const storageRef = ref(storage, `avatars/${uid}`);
+    try {
+      const snapshot = await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      return downloadURL;
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      throw error;
+    }
+  },
   // ... existing methods ...
   async getLeaderboard(limitCount: number = 10): Promise<LeaderboardEntry[]> {
     const usersRef = collection(db, 'users');

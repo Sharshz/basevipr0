@@ -12,7 +12,8 @@ import {
   TrendingUp,
   Users,
   Zap,
-  Activity
+  Activity,
+  Camera
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -24,7 +25,7 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/src/context/AuthContext';
 import { useFarcaster } from '@/src/context/FarcasterContext';
 import { useAccount } from 'wagmi';
-import { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { POI_SERVICE } from '@/src/services/poiService';
 import sdk from '@farcaster/frame-sdk';
 
@@ -33,6 +34,8 @@ export default function Profile() {
   const { context, isFrame } = useFarcaster();
   const { address, isConnected } = useAccount();
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Use real profile if available, otherwise fallback to mock for demo
   const displayProfile = profile || MOCK_USER;
@@ -63,6 +66,23 @@ export default function Profile() {
     }
   };
 
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    setIsUploading(true);
+    try {
+      const downloadURL = await POI_SERVICE.uploadAvatar(user.uid, file);
+      await POI_SERVICE.syncProfile(user.uid, {
+        avatarUrl: downloadURL
+      });
+    } catch (error) {
+      console.error('Upload failed:', error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const handleShare = () => {
     const text = `Check out my Proof of Influence (POI) profile! My score is ${displayProfile.poiScore.total}.`;
     if (isFrame) {
@@ -76,11 +96,31 @@ export default function Profile() {
     <div className="space-y-8 max-w-5xl mx-auto">
       <div className="relative h-48 rounded-2xl bg-gradient-to-r from-primary to-purple-600 overflow-hidden">
         <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
-        <div className="absolute -bottom-16 left-8">
-          <Avatar className="w-32 h-32 border-4 border-card shadow-xl">
-            <AvatarImage src={context?.user?.pfpUrl || user?.photoURL || displayProfile.avatarUrl} />
+        <div className="absolute -bottom-16 left-8 group">
+          <Avatar className="w-32 h-32 border-4 border-card shadow-xl relative overflow-hidden">
+            <AvatarImage src={displayProfile.avatarUrl || context?.user?.pfpUrl || user?.photoURL} />
             <AvatarFallback>{displayName[0]}</AvatarFallback>
+            
+            {user && (
+              <div 
+                className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {isUploading ? (
+                  <Loader2 className="w-8 h-8 text-white animate-spin" />
+                ) : (
+                  <Camera className="w-8 h-8 text-white" />
+                )}
+              </div>
+            )}
           </Avatar>
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            className="hidden" 
+            accept="image/*"
+            onChange={handleFileChange}
+          />
         </div>
       </div>
 
@@ -103,6 +143,15 @@ export default function Profile() {
           </p>
         </div>
         <div className="flex gap-3">
+          <Button 
+            variant="outline" 
+            className="gap-2 border-primary/20 text-primary hover:bg-primary/10"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading || !user}
+          >
+            {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
+            Upload Avatar
+          </Button>
           <Button 
             variant="outline" 
             className="gap-2 border-primary/20 text-primary hover:bg-primary/10"

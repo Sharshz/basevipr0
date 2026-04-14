@@ -68,7 +68,7 @@ export default function Header() {
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-2 pl-2 border-l border-border ml-2">
                 <Avatar className="w-8 h-8">
-                  <AvatarImage src={user.photoURL || undefined} />
+                  <AvatarImage src={profile?.avatarUrl || user.photoURL || undefined} />
                   <AvatarFallback>{user.displayName?.[0] || 'U'}</AvatarFallback>
                 </Avatar>
                 <div className="text-left hidden md:block">
