@@ -1,11 +1,122 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Zap, Target, TrendingUp, Users, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Zap, Target, TrendingUp, Users, ArrowRight, CheckCircle2, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from 'sonner';
 
 export default function Projects() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    // Simulate API call
+    setTimeout(() => {
+      setIsSubmitting(false);
+      setIsOpen(false);
+      toast.success("Campaign Created!", {
+        description: "Your campaign has been submitted for review and will be live shortly.",
+      });
+    }, 1500);
+  };
+
+  const CreateCampaignDialog = ({ children }: { children: React.ReactNode }) => (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        {children}
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[500px] bg-card border-border text-foreground">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-black tracking-tight">Create Campaign</DialogTitle>
+          <DialogDescription className="text-muted-foreground">
+            Define your goals, target audience, and budget to launch on Base.
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-6 py-4">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="title" className="font-bold">Campaign Title</Label>
+              <Input id="title" placeholder="e.g., Summer NFT Mint" required className="bg-muted/50 border-border" />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="goal" className="font-bold">Primary Goal</Label>
+                <Select required defaultValue="mint">
+                  <SelectTrigger className="bg-muted/50 border-border">
+                    <SelectValue placeholder="Select goal" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="mint">NFT Mint</SelectItem>
+                    <SelectItem value="swap">Token Swap</SelectItem>
+                    <SelectItem value="growth">User Growth (Referrals)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="budget" className="font-bold">Budget (USDC)</Label>
+                <Input id="budget" type="number" min="100" placeholder="500" required className="bg-muted/50 border-border" />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="targetPOI" className="font-bold">Target Audience (Min POI Score)</Label>
+              <Select required defaultValue="50">
+                <SelectTrigger className="bg-muted/50 border-border">
+                  <SelectValue placeholder="Select minimum score" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="0">All Users (0+)</SelectItem>
+                  <SelectItem value="50">Verified Users (50+)</SelectItem>
+                  <SelectItem value="75">High Impact (75+)</SelectItem>
+                  <SelectItem value="90">Top 10% Alpha (90+)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="description" className="font-bold">Description & Requirements</Label>
+              <Textarea 
+                id="description" 
+                placeholder="Describe what users need to do to earn the reward..." 
+                required 
+                className="bg-muted/50 border-border min-h-[100px]"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="submit" className="w-full font-bold bg-primary hover:bg-primary/90 text-white" disabled={isSubmitting}>
+              {isSubmitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+              {isSubmitting ? "Creating..." : "Launch Campaign"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white">
       {/* Hero Section */}
@@ -26,10 +137,12 @@ export default function Projects() {
             Not bots. Not fake engagement. Real onchain impact driven by the most influential users in the ecosystem.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-            <Button size="lg" className="bg-primary hover:bg-primary/90 text-white font-bold h-14 px-8 rounded-2xl text-lg">
-              Launch Campaign
-              <ArrowRight className="ml-2 w-5 h-5" />
-            </Button>
+            <CreateCampaignDialog>
+              <Button size="lg" className="bg-primary hover:bg-primary/90 text-white font-bold h-14 px-8 rounded-2xl text-lg">
+                Launch Campaign
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
+            </CreateCampaignDialog>
             <Button size="lg" variant="outline" className="border-border hover:bg-white/5 font-bold h-14 px-8 rounded-2xl text-lg">
               View Case Studies
             </Button>
@@ -140,9 +253,11 @@ export default function Projects() {
       {/* CTA Section */}
       <section className="py-24 px-6 text-center space-y-8">
         <h2 className="text-4xl font-black tracking-tighter">READY TO GROW ON BASE?</h2>
-        <Button size="lg" className="bg-primary hover:bg-primary/90 text-white font-bold h-16 px-12 rounded-2xl text-xl">
-          Launch Your First Campaign
-        </Button>
+        <CreateCampaignDialog>
+          <Button size="lg" className="bg-primary hover:bg-primary/90 text-white font-bold h-16 px-12 rounded-2xl text-xl">
+            Launch Your First Campaign
+          </Button>
+        </CreateCampaignDialog>
         <p className="text-muted-foreground">Join 10+ projects already scaling with POI.</p>
       </section>
     </div>
