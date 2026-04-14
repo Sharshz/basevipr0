@@ -1,9 +1,9 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import * as React from 'react';
 import { AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface Props {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
 interface State {
@@ -11,17 +11,21 @@ interface State {
   error: Error | null;
 }
 
-export class ErrorBoundary extends Component<Props, State> {
-  constructor(props: Props) {
+export class ErrorBoundary extends React.Component<Props, State> {
+  public state: State = {
+    hasError: false,
+    error: null
+  };
+
+  constructor(public props: Props) {
     super(props);
-    this.state = { hasError: false, error: null };
   }
 
   static getDerivedStateFromError(error: Error): State {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
   }
 
@@ -41,18 +45,18 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
-          <div className="max-w-md w-full bg-white rounded-xl shadow-sm p-8 text-center space-y-6">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto">
-              <AlertCircle className="w-8 h-8 text-red-600" />
+        <div className="min-h-screen flex items-center justify-center bg-background p-4 text-foreground">
+          <div className="max-w-md w-full bg-card rounded-xl shadow-sm p-8 text-center space-y-6 border border-border">
+            <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mx-auto">
+              <AlertCircle className="w-8 h-8 text-destructive" />
             </div>
             <div className="space-y-2">
-              <h2 className="text-2xl font-bold text-slate-900">Application Error</h2>
-              <p className="text-slate-500">{message}</p>
+              <h2 className="text-2xl font-bold text-foreground">Application Error</h2>
+              <p className="text-muted-foreground">{message}</p>
             </div>
             <Button 
               onClick={() => window.location.reload()}
-              className="w-full bg-blue-600 hover:bg-blue-700"
+              className="w-full bg-primary hover:bg-primary/90 text-white"
             >
               Reload Application
             </Button>
