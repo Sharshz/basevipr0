@@ -1,0 +1,6 @@
+{
+  "name": "Proof of Influence (POI)",
+  "description": "A live, onchain influence score measuring impact across Base and Farcaster.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
