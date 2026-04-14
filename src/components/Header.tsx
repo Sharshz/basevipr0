@@ -45,7 +45,10 @@ export default function Header() {
           disabled={isPending}
         >
           {isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wallet className="w-3 h-3" />}
-          {isConnected ? `${address?.slice(0, 4)}...${address?.slice(-2)}` : 'Connect'}
+          <div className="flex items-center gap-1.5">
+            {isConnected && <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />}
+            {isConnected ? `${address?.slice(0, 4)}...${address?.slice(-2)}` : 'Connect'}
+          </div>
         </Button>
 
         {user ? (

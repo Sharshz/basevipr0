@@ -28,7 +28,12 @@ import {
   XAxis, 
   YAxis, 
   Tooltip,
-  CartesianGrid 
+  CartesianGrid,
+  Radar,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis
 } from 'recharts';
 import { useAuth } from '@/src/context/AuthContext';
 import { useAccount } from 'wagmi';
@@ -97,6 +102,13 @@ export default function Dashboard() {
 
   const userTypeInfo = getUserTypeLabel(poiScore.userType);
 
+  const radarData = [
+    { subject: 'Influence', A: poiScore.influence, fullMark: 1000 },
+    { subject: 'Trust', A: poiScore.trust, fullMark: 1000 },
+    { subject: 'Activity', A: poiScore.activity, fullMark: 1000 },
+    { subject: 'Alpha', A: poiScore.alpha, fullMark: 1000 },
+  ];
+
   return (
     <div className="space-y-8 pb-8">
       {/* Ego Hit Section */}
@@ -156,6 +168,28 @@ export default function Dashboard() {
           </Button>
         </div>
       </section>
+
+      {/* Score Visualization */}
+      <Card className="border-none bg-card/30 backdrop-blur-sm p-6 rounded-3xl overflow-hidden">
+        <div className="h-[200px] w-full flex items-center justify-center">
+          <ResponsiveContainer width="100%" height="100%">
+            <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
+              <PolarGrid stroke="rgba(255,255,255,0.1)" />
+              <PolarAngleAxis 
+                dataKey="subject" 
+                tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: 'bold' }} 
+              />
+              <Radar
+                name="POI Score"
+                dataKey="A"
+                stroke="var(--primary)"
+                fill="var(--primary)"
+                fillOpacity={0.5}
+              />
+            </RadarChart>
+          </ResponsiveContainer>
+        </div>
+      </Card>
 
       {/* Reputation Breakdown */}
       <div className="grid grid-cols-2 gap-4">

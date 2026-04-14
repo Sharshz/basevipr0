@@ -88,6 +88,43 @@ async function startServer() {
     res.json({ success: true, campaign });
   });
 
+  // Profile API
+  app.get("/api/profile/:uid", async (req, res) => {
+    const { uid } = req.params;
+    try {
+      // In a real app, we would fetch from Firestore/DB here
+      // For now, we return a mock profile that matches the UserProfile type
+      const mockProfile = {
+        uid,
+        displayName: "User " + uid.slice(0, 4),
+        farcasterHandle: "user_" + uid.slice(0, 4),
+        poiScore: {
+          total: 750,
+          influence: 800,
+          trust: 700,
+          activity: 600,
+          alpha: 900,
+          trend: 'up',
+          rank: 120,
+          percentile: 98,
+          userType: 'high_impact'
+        },
+        impact: {
+          mintsDriven: 45,
+          volumeInfluenced: 12500,
+          usersOnboarded: 12,
+          totalActions: 320
+        },
+        badges: [],
+        vouchCount: 15,
+        isVerified: true
+      };
+      res.json({ success: true, profile: mockProfile });
+    } catch (error) {
+      res.status(500).json({ success: false, error: "Failed to fetch profile" });
+    }
+  });
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({

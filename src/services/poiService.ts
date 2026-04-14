@@ -151,5 +151,19 @@ export const POI_SERVICE = {
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, `users/${uid} or campaigns/${campaignId}`);
     }
+  },
+
+  async getProfile(uid: string): Promise<UserProfile | null> {
+    try {
+      const response = await fetch(`/api/profile/${uid}`);
+      const data = await response.json();
+      if (data.success) {
+        return data.profile;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error fetching profile from API:', error);
+      return null;
+    }
   }
 };

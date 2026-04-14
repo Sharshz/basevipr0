@@ -40,6 +40,12 @@ export interface Badge {
   dateEarned: string;
 }
 
+export interface CampaignRequirement {
+  type: 'mints' | 'volume' | 'referrals' | 'actions';
+  target: number;
+  label: string;
+}
+
 export interface Campaign {
   id: string;
   title: string;
@@ -49,6 +55,7 @@ export interface Campaign {
   status: 'active' | 'completed';
   participants: number;
   imageUrl: string;
+  requirements?: CampaignRequirement[];
 }
 
 export interface LeaderboardEntry {

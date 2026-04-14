@@ -54,6 +54,10 @@ export const MOCK_CAMPAIGNS: Campaign[] = [
     status: 'active',
     participants: 1240,
     imageUrl: 'https://picsum.photos/seed/camp1/400/200',
+    requirements: [
+      { type: 'mints', target: 10, label: 'Mints Driven' },
+      { type: 'volume', target: 5000, label: 'Volume Influenced' }
+    ]
   },
   {
     id: 'c2',
@@ -64,6 +68,10 @@ export const MOCK_CAMPAIGNS: Campaign[] = [
     status: 'active',
     participants: 3500,
     imageUrl: 'https://picsum.photos/seed/camp2/400/200',
+    requirements: [
+      { type: 'referrals', target: 5, label: 'Users Onboarded' },
+      { type: 'actions', target: 50, label: 'Total Actions' }
+    ]
   },
 ];
 

@@ -213,7 +213,15 @@ export default function Profile() {
           ) : (
             <div className="space-y-1">
               <h1 className="text-2xl font-black text-foreground">{displayName}</h1>
-              <p className="text-muted-foreground text-sm">@{farcasterHandle}</p>
+              <a 
+                href={`https://warpcast.com/${farcasterHandle}`} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-muted-foreground text-sm hover:text-primary transition-colors flex items-center justify-center gap-1 group"
+              >
+                @{farcasterHandle}
+                <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </a>
             </div>
           )}
         </div>
@@ -247,23 +255,29 @@ export default function Profile() {
         </Button>
       </div>
 
-      {/* Impact Section (Trust Builder) */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="p-4 rounded-2xl bg-card border border-border space-y-1">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Mints Driven</p>
-          <p className="text-xl font-black text-foreground">{displayProfile.impact.mintsDriven}</p>
-        </div>
-        <div className="p-4 rounded-2xl bg-card border border-border space-y-1">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Volume</p>
-          <p className="text-xl font-black text-foreground">${(displayProfile.impact.volumeInfluenced / 1000).toFixed(1)}k</p>
-        </div>
-        <div className="p-4 rounded-2xl bg-card border border-border space-y-1">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Onboarded</p>
-          <p className="text-xl font-black text-foreground">{displayProfile.impact.usersOnboarded}</p>
-        </div>
-        <div className="p-4 rounded-2xl bg-card border border-border space-y-1">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Actions</p>
-          <p className="text-xl font-black text-foreground">{displayProfile.impact.totalActions}</p>
+      {/* Engagement Stats Section */}
+      <div className="space-y-3">
+        <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+          <TrendingUp className="w-4 h-4 text-primary" />
+          Engagement Stats
+        </h2>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="p-4 rounded-2xl bg-card border border-border space-y-1">
+            <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Mints Driven</p>
+            <p className="text-xl font-black text-foreground">{displayProfile.impact.mintsDriven}</p>
+          </div>
+          <div className="p-4 rounded-2xl bg-card border border-border space-y-1">
+            <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Volume</p>
+            <p className="text-xl font-black text-foreground">${(displayProfile.impact.volumeInfluenced / 1000).toFixed(1)}k</p>
+          </div>
+          <div className="p-4 rounded-2xl bg-card border border-border space-y-1">
+            <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Onboarded</p>
+            <p className="text-xl font-black text-foreground">{displayProfile.impact.usersOnboarded}</p>
+          </div>
+          <div className="p-4 rounded-2xl bg-card border border-border space-y-1">
+            <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Total Actions</p>
+            <p className="text-xl font-black text-foreground">{displayProfile.impact.totalActions}</p>
+          </div>
         </div>
       </div>
 
@@ -274,7 +288,7 @@ export default function Profile() {
           Earned Badges
         </h2>
         <div className="grid grid-cols-2 gap-3">
-          {user.badges.map((badge) => (
+          {displayProfile.badges?.map((badge) => (
             <div key={badge.id} className="p-3 rounded-2xl bg-muted/30 border border-border/50 flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-muted overflow-hidden flex-shrink-0">
                 <img src={badge.imageUrl} alt={badge.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />

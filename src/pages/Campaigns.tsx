@@ -8,11 +8,13 @@ import {
   Lock,
   Loader2,
   Zap,
-  ExternalLink
+  ExternalLink,
+  TrendingUp
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import { MOCK_CAMPAIGNS, MOCK_USER } from '@/src/mockData';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/src/context/AuthContext';
@@ -24,17 +26,30 @@ export default function Campaigns() {
   const [joiningId, setJoiningId] = useState<string | null>(null);
   
   const userScore = profile?.poiScore?.total || MOCK_USER.poiScore.total;
+  const impact = profile?.impact || MOCK_USER.impact;
+
+  // Simulate joined campaigns for demo
+  const joinedCampaigns = ['c1']; 
 
   const handleJoin = async (campaignId: string) => {
     if (!user) return;
     setJoiningId(campaignId);
     try {
       await POI_SERVICE.joinCampaign(user.uid, campaignId);
-      // In a real app, we'd update the local state or wait for Firestore sync
     } catch (error) {
       console.error('Join failed:', error);
     } finally {
       setJoiningId(null);
+    }
+  };
+
+  const getRequirementValue = (type: string) => {
+    switch (type) {
+      case 'mints': return impact.mintsDriven;
+      case 'volume': return impact.volumeInfluenced;
+      case 'referrals': return impact.usersOnboarded;
+      case 'actions': return impact.totalActions;
+      default: return 0;
     }
   };
 
@@ -49,6 +64,7 @@ export default function Campaigns() {
         {MOCK_CAMPAIGNS.map((campaign) => {
           const isEligible = userScore >= campaign.minPOI;
           const isJoining = joiningId === campaign.id;
+          const hasJoined = joinedCampaigns.includes(campaign.id);
           
           return (
             <Card key={campaign.id} className="border border-border bg-card rounded-3xl overflow-hidden group">
@@ -60,6 +76,11 @@ export default function Campaigns() {
                     className="w-full h-full object-cover transition-transform group-hover:scale-105"
                     referrerPolicy="no-referrer"
                   />
+                  {hasJoined && (
+                    <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
+                      <Badge className="bg-primary text-white border-none">JOINED</Badge>
+                    </div>
+                  )}
                 </div>
                 <div className="flex-1 p-5 space-y-3">
                   <div className="flex justify-between items-start gap-2">
@@ -74,6 +95,35 @@ export default function Campaigns() {
                       {isEligible ? "Eligible" : `Score > ${campaign.minPOI}`}
                     </Badge>
                   </div>
+
+                  {/* Progress Section for Joined Campaigns */}
+                  {hasJoined && campaign.requirements && (
+                    <div className="space-y-3 py-2 border-y border-border/50">
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1">
+                        <TrendingUp className="w-3 h-3" />
+                        Campaign Progress
+                      </p>
+                      <div className="space-y-2">
+                        {campaign.requirements.map((req, i) => {
+                          const current = getRequirementValue(req.type);
+                          const progress = Math.min(100, (current / req.target) * 100);
+                          const isComplete = current >= req.target;
+
+                          return (
+                            <div key={i} className="space-y-1">
+                              <div className="flex justify-between text-[10px] font-bold">
+                                <span className="text-muted-foreground">{req.label}</span>
+                                <span className={cn(isComplete ? "text-green-500" : "text-primary")}>
+                                  {req.type === 'volume' ? `$${current.toLocaleString()}` : current} / {req.type === 'volume' ? `$${req.target.toLocaleString()}` : req.target}
+                                </span>
+                              </div>
+                              <Progress value={progress} className="h-1 bg-muted" />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
 
                   <div className="flex items-center gap-4 text-[10px] text-muted-foreground uppercase tracking-widest font-bold">
                     <div className="flex items-center gap-1.5">
@@ -93,15 +143,18 @@ export default function Campaigns() {
                   <Button 
                     className={cn(
                       "w-full h-10 gap-2 rounded-xl font-bold text-xs transition-all",
+                      hasJoined ? "bg-green-500/10 text-green-500 hover:bg-green-500/20 border-green-500/20" :
                       isEligible ? "bg-primary hover:bg-primary/90 text-white" : "bg-muted text-muted-foreground hover:bg-muted cursor-not-allowed"
                     )}
-                    disabled={!isEligible || isJoining || !user}
-                    onClick={() => handleJoin(campaign.id)}
+                    variant={hasJoined ? "outline" : "default"}
+                    disabled={(!isEligible && !hasJoined) || isJoining || !user}
+                    onClick={() => !hasJoined && handleJoin(campaign.id)}
                   >
                     {isJoining ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
-                    {isEligible ? "Claim Reward" : "Locked"}
-                    {!isJoining && isEligible && <ArrowRight className="w-3 h-3" />}
-                    {!isJoining && !isEligible && <Lock className="w-3 h-3" />}
+                    {hasJoined ? "In Progress" : isEligible ? "Join Campaign" : "Locked"}
+                    {!isJoining && !hasJoined && isEligible && <ArrowRight className="w-3 h-3" />}
+                    {!isJoining && !hasJoined && !isEligible && <Lock className="w-3 h-3" />}
+                    {hasJoined && <CheckCircle2 className="w-3 h-3" />}
                   </Button>
                 </div>
               </div>

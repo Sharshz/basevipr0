@@ -4,6 +4,7 @@ import { auth, googleProvider } from '../firebase';
 import { UserProfile } from '../types';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../firebase';
+import { POI_SERVICE } from '../services/poiService';
 
 interface AuthContextType {
   user: User | null;
@@ -34,12 +35,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!user) return;
 
+    const fetchProfile = async () => {
+      try {
+        const apiProfile = await POI_SERVICE.getProfile(user.uid);
+        if (apiProfile) {
+          setProfile(apiProfile);
+        }
+      } catch (error) {
+        console.error('Initial profile fetch failed:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+
+    // Still listen to Firestore for real-time updates if they happen
     const userDocRef = doc(db, 'users', user.uid);
     const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
       if (docSnap.exists()) {
         setProfile(docSnap.data() as UserProfile);
-      } else {
-        setProfile(null);
       }
       setLoading(false);
     }, (error) => {
