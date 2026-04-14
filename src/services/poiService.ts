@@ -2,6 +2,7 @@ import { db, storage, handleFirestoreError, OperationType } from '../firebase';
 import { doc, setDoc, getDoc, updateDoc, increment, collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { POIScore, UserProfile, LeaderboardEntry } from '../types';
+import { ActionEvent } from '../lib/scoringEngine';
 
 export const POI_SERVICE = {
   async uploadAvatar(uid: string, file: File): Promise<string> {
@@ -38,31 +39,63 @@ export const POI_SERVICE = {
     }
   },
   /**
-   * Simulates calculating a POI score based on multi-dimensional metrics.
-   * In a real app, this would call a backend that indexes Farcaster and Base data.
+   * Calculates a POI score using the backend scoring engine.
+   * This includes anti-gaming, time decay, and anomaly detection.
    */
   async calculateScore(uid: string, address?: string, farcasterHandle?: string): Promise<POIScore> {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    // In a real app, we would fetch real events from the database/indexer
+    // For this demo, we generate a realistic set of events to show the engine in action
+    const mockEvents: ActionEvent[] = [
+      { type: 'like', timestamp: Date.now() - 1000 * 60 * 60 * 2 },
+      { type: 'recast', timestamp: Date.now() - 1000 * 60 * 60 * 24 * 2 },
+      { type: 'mint', timestamp: Date.now() - 1000 * 60 * 60 * 24 * 5 },
+      { type: 'swap', timestamp: Date.now() - 1000 * 60 * 60 * 24 * 10 },
+      { type: 'vouch', timestamp: Date.now() - 1000 * 60 * 60 * 24 * 15 },
+    ];
 
-    // Base scores (simulated)
-    const influence = farcasterHandle ? Math.floor(Math.random() * 400) + 500 : 100;
-    const trust = address ? Math.floor(Math.random() * 300) + 600 : 200;
-    const activity = Math.floor(Math.random() * 500) + 400;
-    const alpha = Math.floor(Math.random() * 400) + 400;
+    // Add some "spam" to test capping (100 likes today)
+    for (let i = 0; i < 100; i++) {
+      mockEvents.push({ type: 'like', timestamp: Date.now() - 1000 * 60 * i });
+    }
 
-    const total = Math.floor((influence * 0.4) + (trust * 0.3) + (activity * 0.2) + (alpha * 0.1));
+    try {
+      const response = await fetch('/api/score/calculate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ events: mockEvents })
+      });
+      
+      const data = await response.json();
+      if (!data.success) throw new Error(data.error);
 
-    return {
-      total,
-      influence,
-      trust,
-      activity,
-      alpha,
-      trend: 'up',
-      rank: Math.floor(Math.random() * 1000) + 1,
-      percentile: 95 + Math.random() * 4,
-    };
+      const result = data.result;
+
+      return {
+        total: result.total,
+        influence: result.influence,
+        trust: result.trust,
+        activity: result.activity,
+        alpha: result.alpha,
+        trend: 'up',
+        rank: Math.floor(Math.random() * 1000) + 1,
+        percentile: 95 + Math.random() * 4,
+        isAnomaly: result.isAnomaly,
+        userType: result.userType
+      };
+    } catch (error) {
+      console.error('Scoring calculation failed:', error);
+      // Fallback to simple simulation if API fails
+      return {
+        total: 500,
+        influence: 500,
+        trust: 500,
+        activity: 500,
+        alpha: 500,
+        trend: 'up',
+        rank: 999,
+        percentile: 50,
+      };
+    }
   },
 
   async syncProfile(uid: string, profileData: Partial<UserProfile>) {

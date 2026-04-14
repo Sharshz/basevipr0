@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { 
-  Megaphone, 
+  Target, 
   Users, 
   Clock, 
   ArrowRight,
   CheckCircle2,
   Lock,
-  Loader2
+  Loader2,
+  Zap,
+  ExternalLink
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +17,7 @@ import { MOCK_CAMPAIGNS, MOCK_USER } from '@/src/mockData';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/src/context/AuthContext';
 import { POI_SERVICE } from '@/src/services/poiService';
+import { Link } from 'react-router-dom';
 
 export default function Campaigns() {
   const { user, profile } = useAuth();
@@ -28,7 +31,6 @@ export default function Campaigns() {
     try {
       await POI_SERVICE.joinCampaign(user.uid, campaignId);
       // In a real app, we'd update the local state or wait for Firestore sync
-      alert('Successfully joined campaign!');
     } catch (error) {
       console.error('Join failed:', error);
     } finally {
@@ -37,99 +39,94 @@ export default function Campaigns() {
   };
 
   return (
-    <div className="space-y-8">
-      <header>
-        <h1 className="text-3xl font-bold text-foreground">Campaign Hub</h1>
-        <p className="text-muted-foreground">Earn rewards based on your Proof of Influence.</p>
+    <div className="space-y-6 pb-20">
+      <header className="pt-4">
+        <h1 className="text-2xl font-black tracking-tight">ACTIVE CAMPAIGNS</h1>
+        <p className="text-sm text-muted-foreground">Turn your influence into economic rewards.</p>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 gap-4">
         {MOCK_CAMPAIGNS.map((campaign) => {
           const isEligible = userScore >= campaign.minPOI;
           const isJoining = joiningId === campaign.id;
           
           return (
-            <Card key={campaign.id} className="border-none shadow-sm overflow-hidden group bg-card">
-              <div className="h-48 overflow-hidden relative">
-                <img 
-                  src={campaign.imageUrl} 
-                  alt={campaign.title}
-                  className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                  referrerPolicy="no-referrer"
-                />
-                <div className="absolute top-4 right-4">
-                  <Badge className={cn(
-                    isEligible ? "bg-green-500" : "bg-muted text-muted-foreground border-border"
-                  )}>
-                    {isEligible ? "Eligible" : `Requires ${campaign.minPOI} POI`}
-                  </Badge>
+            <Card key={campaign.id} className="border border-border bg-card rounded-3xl overflow-hidden group">
+              <div className="flex flex-col sm:flex-row">
+                <div className="w-full sm:w-32 h-32 sm:h-auto overflow-hidden relative flex-shrink-0">
+                  <img 
+                    src={campaign.imageUrl} 
+                    alt={campaign.title}
+                    className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+                <div className="flex-1 p-5 space-y-3">
+                  <div className="flex justify-between items-start gap-2">
+                    <div>
+                      <h3 className="text-lg font-black text-foreground leading-tight">{campaign.title}</h3>
+                      <p className="text-xs text-muted-foreground line-clamp-1">{campaign.description}</p>
+                    </div>
+                    <Badge className={cn(
+                      "flex-shrink-0",
+                      isEligible ? "bg-green-500/10 text-green-500 border-green-500/20" : "bg-muted text-muted-foreground border-border"
+                    )}>
+                      {isEligible ? "Eligible" : `Score > ${campaign.minPOI}`}
+                    </Badge>
+                  </div>
+
+                  <div className="flex items-center gap-4 text-[10px] text-muted-foreground uppercase tracking-widest font-bold">
+                    <div className="flex items-center gap-1.5">
+                      <Users className="w-3 h-3" />
+                      <span>{campaign.participants.toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Clock className="w-3 h-3" />
+                      <span>7d left</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-primary">
+                      <Zap className="w-3 h-3 fill-primary/20" />
+                      <span>{campaign.reward}</span>
+                    </div>
+                  </div>
+
+                  <Button 
+                    className={cn(
+                      "w-full h-10 gap-2 rounded-xl font-bold text-xs transition-all",
+                      isEligible ? "bg-primary hover:bg-primary/90 text-white" : "bg-muted text-muted-foreground hover:bg-muted cursor-not-allowed"
+                    )}
+                    disabled={!isEligible || isJoining || !user}
+                    onClick={() => handleJoin(campaign.id)}
+                  >
+                    {isJoining ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
+                    {isEligible ? "Claim Reward" : "Locked"}
+                    {!isJoining && isEligible && <ArrowRight className="w-3 h-3" />}
+                    {!isJoining && !isEligible && <Lock className="w-3 h-3" />}
+                  </Button>
                 </div>
               </div>
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="text-xl text-foreground">{campaign.title}</CardTitle>
-                    <CardDescription className="mt-1 text-muted-foreground">{campaign.description}</CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center gap-6 text-sm text-muted-foreground">
-                  <div className="flex items-center gap-1.5">
-                    <Users className="w-4 h-4" />
-                    <span>{campaign.participants.toLocaleString()} joined</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Clock className="w-4 h-4" />
-                    <span>7 days left</span>
-                  </div>
-                </div>
-                
-                <div className="p-4 bg-muted/50 rounded-lg flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Reward</p>
-                    <p className="text-lg font-bold text-primary">{campaign.reward}</p>
-                  </div>
-                  {isEligible ? (
-                    <CheckCircle2 className="w-6 h-6 text-green-500" />
-                  ) : (
-                    <Lock className="w-6 h-6 text-muted-foreground/50" />
-                  )}
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button 
-                  className={cn(
-                    "w-full gap-2",
-                    isEligible ? "bg-primary hover:bg-primary/90 text-white" : "bg-muted text-muted-foreground hover:bg-muted cursor-not-allowed"
-                  )}
-                  disabled={!isEligible || isJoining || !user}
-                  onClick={() => handleJoin(campaign.id)}
-                >
-                  {isJoining ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                  {isEligible ? "Join Campaign" : "Boost POI to Unlock"}
-                  {!isJoining && <ArrowRight className="w-4 h-4" />}
-                </Button>
-              </CardFooter>
             </Card>
           );
         })}
       </div>
 
-      <Card className="border-none shadow-sm bg-primary text-white p-8">
-        <div className="flex flex-col md:flex-row items-center gap-8">
-          <div className="flex-1 space-y-4 text-center md:text-left">
-            <h2 className="text-2xl font-bold">Launch your own campaign</h2>
-            <p className="text-primary-foreground/80">Target the most influential users on Base for your project's growth.</p>
-            <Button variant="outline" className="border-white/20 text-white hover:bg-white/10 hover:text-white">
-              Contact Sales
-            </Button>
+      {/* Project Onboarding CTA */}
+      <Link to="/projects">
+        <Card className="border border-primary/20 bg-primary/5 p-6 rounded-3xl group cursor-pointer hover:bg-primary/10 transition-colors">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <h2 className="text-lg font-black text-foreground flex items-center gap-2">
+                <Target className="w-5 h-5 text-primary" />
+                Launch Your Campaign
+              </h2>
+              <p className="text-xs text-muted-foreground">Target the most influential users on Base.</p>
+            </div>
+            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <ExternalLink className="w-5 h-5 text-primary" />
+            </div>
           </div>
-          <div className="w-full md:w-64 h-40 bg-white/10 rounded-xl flex items-center justify-center border border-white/10">
-             <Megaphone className="w-16 h-16 text-white/40" />
-          </div>
-        </div>
-      </Card>
+        </Card>
+      </Link>
     </div>
   );
 }

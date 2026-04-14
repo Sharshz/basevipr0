@@ -11,7 +11,10 @@ import {
   Globe,
   Zap,
   RefreshCw,
-  Loader2
+  Loader2,
+  AlertTriangle,
+  Award,
+  UserCheck
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -83,12 +86,30 @@ export default function Dashboard() {
     }
   };
 
+  const getUserTypeLabel = (type?: string) => {
+    switch (type) {
+      case 'high_impact': return { label: 'High Impact', icon: Award, color: 'text-yellow-500 bg-yellow-500/10' };
+      case 'active': return { label: 'Active User', icon: Zap, color: 'text-blue-500 bg-blue-500/10' };
+      case 'bot_suspect': return { label: 'Bot Suspect', icon: AlertTriangle, color: 'text-red-500 bg-red-500/10' };
+      default: return { label: 'New User', icon: UserCheck, color: 'text-green-500 bg-green-500/10' };
+    }
+  };
+
+  const userTypeInfo = getUserTypeLabel(poiScore.userType);
+
   return (
     <div className="space-y-8 pb-8">
       {/* Ego Hit Section */}
       <section className="flex flex-col items-center text-center py-10 space-y-6 relative overflow-hidden">
         <div className="absolute inset-0 bg-primary/5 blur-3xl rounded-full -z-10 animate-pulse"></div>
         
+        {poiScore.isAnomaly && (
+          <Badge variant="destructive" className="animate-bounce flex items-center gap-1 px-4 py-1 rounded-full">
+            <AlertTriangle className="w-3 h-3" />
+            Anomaly Detected
+          </Badge>
+        )}
+
         <motion.div
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -102,9 +123,15 @@ export default function Dashboard() {
         </motion.div>
 
         <div className="space-y-2">
-          <Badge className="bg-primary/20 text-primary border-primary/30 text-sm px-4 py-1 rounded-full">
-            TOP {100 - poiScore.percentile}% ON BASE
-          </Badge>
+          <div className="flex gap-2 justify-center">
+            <Badge className="bg-primary/20 text-primary border-primary/30 text-sm px-4 py-1 rounded-full">
+              TOP {Math.max(1, Math.floor(100 - (poiScore.percentile || 0)))}% ON BASE
+            </Badge>
+            <Badge className={cn("text-sm px-4 py-1 rounded-full border-none font-bold flex items-center gap-1", userTypeInfo.color)}>
+              <userTypeInfo.icon className="w-3 h-3" />
+              {userTypeInfo.label}
+            </Badge>
+          </div>
           <p className="text-green-500 font-bold flex items-center justify-center gap-1">
             <ArrowUpRight className="w-4 h-4" />
             +32 today

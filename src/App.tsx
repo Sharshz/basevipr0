@@ -5,6 +5,8 @@ import Leaderboard from './pages/Leaderboard';
 import Campaigns from './pages/Campaigns';
 import Profile from './pages/Profile';
 import Entry from './pages/Entry';
+import Projects from './pages/Projects';
+import Analytics from './pages/Analytics';
 import BottomNav from './components/BottomNav';
 import { useAuth } from './context/AuthContext';
 
@@ -25,6 +27,8 @@ export default function App() {
                 <Route path="/leaderboard" element={user ? <Leaderboard /> : <Navigate to="/entry" />} />
                 <Route path="/campaigns" element={user ? <Campaigns /> : <Navigate to="/entry" />} />
                 <Route path="/profile" element={user ? <Profile /> : <Navigate to="/entry" />} />
+                <Route path="/projects" element={<Projects />} />
+                <Route path="/analytics" element={<Analytics />} />
               </Routes>
             </div>
           </main>

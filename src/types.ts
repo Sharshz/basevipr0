@@ -7,6 +7,8 @@ export interface POIScore {
   trend: 'up' | 'down' | 'stable';
   rank: number;
   percentile: number;
+  isAnomaly?: boolean;
+  userType?: 'high_impact' | 'active' | 'bot_suspect' | 'new_user';
 }
 
 export interface ImpactStats {
