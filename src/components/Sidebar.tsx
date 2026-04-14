@@ -13,7 +13,7 @@ export default function Sidebar() {
   const location = useLocation();
 
   return (
-    <div className="w-64 bg-card border-r border-border h-screen flex flex-col fixed left-0 top-0">
+    <div className="hidden md:flex w-64 bg-card border-r border-border h-screen flex-col fixed left-0 top-0">
       <div className="p-6 flex items-center gap-2">
         <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
           <Zap className="text-white w-5 h-5 fill-current" />

@@ -1,11 +1,19 @@
 export interface POIScore {
   total: number;
-  social: number;
-  onchain: number;
-  network: number;
+  influence: number;
+  trust: number;
+  activity: number;
+  alpha: number;
   trend: 'up' | 'down' | 'stable';
   rank: number;
   percentile: number;
+}
+
+export interface ImpactStats {
+  mintsDriven: number;
+  volumeInfluenced: number;
+  usersOnboarded: number;
+  totalActions: number;
 }
 
 export interface UserProfile {
@@ -15,7 +23,10 @@ export interface UserProfile {
   displayName: string;
   avatarUrl?: string;
   poiScore: POIScore;
+  impact: ImpactStats;
   badges: Badge[];
+  vouchCount: number;
+  isVerified: boolean;
 }
 
 export interface Badge {

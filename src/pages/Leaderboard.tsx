@@ -1,9 +1,11 @@
+import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { 
   Trophy, 
   Medal, 
   Search,
-  ExternalLink
+  ExternalLink,
+  Loader2
 } from 'lucide-react';
 import { 
   Table, 
@@ -18,8 +20,30 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { MOCK_LEADERBOARD } from '@/src/mockData';
+import { POI_SERVICE } from '@/src/services/poiService';
+import { LeaderboardEntry } from '@/src/types';
 
 export default function Leaderboard() {
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      const data = await POI_SERVICE.getLeaderboard(20);
+      setLeaderboard(data.length > 0 ? data : MOCK_LEADERBOARD);
+      setLoading(false);
+    };
+    fetchLeaderboard();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="h-[60vh] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -34,7 +58,7 @@ export default function Leaderboard() {
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {MOCK_LEADERBOARD.slice(0, 3).map((user, idx) => (
+        {leaderboard.slice(0, 3).map((user, idx) => (
           <Card key={user.displayName} className="border-none shadow-sm relative overflow-hidden bg-card">
             {idx === 0 && (
               <div className="absolute top-0 right-0 p-4">
@@ -80,7 +104,7 @@ export default function Leaderboard() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {MOCK_LEADERBOARD.map((user) => (
+            {leaderboard.map((user) => (
               <TableRow key={user.displayName} className="hover:bg-accent/50 transition-colors border-border">
                 <TableCell className="text-center font-bold text-muted-foreground">
                   {user.rank <= 3 ? (

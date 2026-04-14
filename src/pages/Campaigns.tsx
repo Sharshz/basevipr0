@@ -1,19 +1,40 @@
+import { useState } from 'react';
 import { 
   Megaphone, 
   Users, 
   Clock, 
   ArrowRight,
   CheckCircle2,
-  Lock
+  Lock,
+  Loader2
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MOCK_CAMPAIGNS, MOCK_USER } from '@/src/mockData';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/src/context/AuthContext';
+import { POI_SERVICE } from '@/src/services/poiService';
 
 export default function Campaigns() {
-  const userScore = MOCK_USER.poiScore.total;
+  const { user, profile } = useAuth();
+  const [joiningId, setJoiningId] = useState<string | null>(null);
+  
+  const userScore = profile?.poiScore?.total || MOCK_USER.poiScore.total;
+
+  const handleJoin = async (campaignId: string) => {
+    if (!user) return;
+    setJoiningId(campaignId);
+    try {
+      await POI_SERVICE.joinCampaign(user.uid, campaignId);
+      // In a real app, we'd update the local state or wait for Firestore sync
+      alert('Successfully joined campaign!');
+    } catch (error) {
+      console.error('Join failed:', error);
+    } finally {
+      setJoiningId(null);
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -25,6 +46,7 @@ export default function Campaigns() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {MOCK_CAMPAIGNS.map((campaign) => {
           const isEligible = userScore >= campaign.minPOI;
+          const isJoining = joiningId === campaign.id;
           
           return (
             <Card key={campaign.id} className="border-none shadow-sm overflow-hidden group bg-card">
@@ -81,10 +103,12 @@ export default function Campaigns() {
                     "w-full gap-2",
                     isEligible ? "bg-primary hover:bg-primary/90 text-white" : "bg-muted text-muted-foreground hover:bg-muted cursor-not-allowed"
                   )}
-                  disabled={!isEligible}
+                  disabled={!isEligible || isJoining || !user}
+                  onClick={() => handleJoin(campaign.id)}
                 >
+                  {isJoining ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                   {isEligible ? "Join Campaign" : "Boost POI to Unlock"}
-                  <ArrowRight className="w-4 h-4" />
+                  {!isJoining && <ArrowRight className="w-4 h-4" />}
                 </Button>
               </CardFooter>
             </Card>

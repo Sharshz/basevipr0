@@ -3,12 +3,12 @@ import { POIScore } from '../types';
 /**
  * Proof of Influence (POI) Scoring Engine
  * 
- * Formula: POI Score = (Social × 0.4) + (Onchain × 0.3) + (Network × 0.3)
+ * Formula: POI Score = (Influence × 0.4) + (Trust × 0.3) + (Activity × 0.2) + (Alpha × 0.1)
  */
 
 export class ScoreEngine {
-  static calculateScore(social: number, onchain: number, network: number): number {
-    const rawScore = (social * 0.4) + (onchain * 0.3) + (network * 0.3);
+  static calculateScore(influence: number, trust: number, activity: number, alpha: number): number {
+    const rawScore = (influence * 0.4) + (trust * 0.3) + (activity * 0.2) + (alpha * 0.1);
     return Math.round(rawScore);
   }
 
@@ -20,10 +20,11 @@ export class ScoreEngine {
     await new Promise(resolve => setTimeout(resolve, 800));
 
     return {
-      total: 82,
-      social: 88,
-      onchain: 75,
-      network: 83,
+      total: 820,
+      influence: 720,
+      trust: 910,
+      activity: 640,
+      alpha: 780,
       trend: 'up',
       rank: 42,
       percentile: 98,

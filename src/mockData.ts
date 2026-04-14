@@ -7,13 +7,20 @@ export const MOCK_USER: UserProfile = {
   displayName: 'Alex Base',
   avatarUrl: 'https://picsum.photos/seed/alex/200/200',
   poiScore: {
-    total: 82,
-    social: 88,
-    onchain: 75,
-    network: 83,
+    total: 820,
+    influence: 720,
+    trust: 910,
+    activity: 640,
+    alpha: 780,
     trend: 'up',
     rank: 42,
     percentile: 98,
+  },
+  impact: {
+    mintsDriven: 120,
+    volumeInfluenced: 45000,
+    usersOnboarded: 300,
+    totalActions: 1200,
   },
   badges: [
     {
@@ -33,6 +40,8 @@ export const MOCK_USER: UserProfile = {
       dateEarned: '2023-08-10',
     },
   ],
+  vouchCount: 15,
+  isVerified: true,
 };
 
 export const MOCK_CAMPAIGNS: Campaign[] = [

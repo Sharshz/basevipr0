@@ -1,4 +1,4 @@
-import { Bell, Search, Wallet, LogIn, LogOut } from 'lucide-react';
+import { Bell, Search, Wallet, LogIn, LogOut, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
@@ -11,13 +11,28 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/src/context/AuthContext';
+import { useAccount, useConnect, useDisconnect } from 'wagmi';
+import { useFarcaster } from '@/src/context/FarcasterContext';
 
 export default function Header() {
   const { user, profile, login, logout } = useAuth();
+  const { address, isConnected } = useAccount();
+  const { connect, connectors, isPending } = useConnect();
+  const { disconnect } = useDisconnect();
+  const { isFrame, context } = useFarcaster();
+
+  const handleConnect = () => {
+    if (isConnected) {
+      disconnect();
+    } else {
+      // Connect to the first available connector (usually injected or coinbase)
+      connect({ connector: connectors[0] });
+    }
+  };
 
   return (
-    <header className="h-16 border-b border-border bg-card sticky top-0 z-10 px-8 flex items-center justify-between">
-      <div className="relative w-96">
+    <header className="h-16 border-b border-border bg-card sticky top-0 z-10 px-4 md:px-8 flex items-center justify-between">
+      <div className="relative w-96 hidden md:block">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input 
           placeholder="Search for users, campaigns, or badges..." 
@@ -26,9 +41,21 @@ export default function Header() {
       </div>
 
       <div className="flex items-center gap-4">
-        <Button variant="outline" size="sm" className="gap-2 border-primary/20 text-primary hover:bg-primary/10">
-          <Wallet className="w-4 h-4" />
-          Connect Wallet
+        {isFrame && context?.user && (
+          <div className="flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-full border border-primary/20">
+            <span className="text-xs font-bold text-primary">@{context.user.username}</span>
+          </div>
+        )}
+
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="gap-2 border-primary/20 text-primary hover:bg-primary/10"
+          onClick={handleConnect}
+          disabled={isPending}
+        >
+          {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wallet className="w-4 h-4" />}
+          {isConnected ? `${address?.slice(0, 6)}...${address?.slice(-4)}` : 'Connect Wallet'}
         </Button>
 
         <button className="p-2 text-muted-foreground hover:text-foreground transition-colors relative">
