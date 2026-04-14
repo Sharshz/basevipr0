@@ -5,7 +5,9 @@ import {
   Medal, 
   Search,
   ExternalLink,
-  Loader2
+  Loader2,
+  Clock,
+  TrendingUp
 } from 'lucide-react';
 import { 
   Table, 
@@ -19,11 +21,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { MOCK_LEADERBOARD } from '@/src/mockData';
 import { POI_SERVICE } from '@/src/services/poiService';
 import { LeaderboardEntry } from '@/src/types';
+import { useAuth } from '@/src/context/AuthContext';
 
 export default function Leaderboard() {
+  const { user, profile } = useAuth();
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -44,99 +49,105 @@ export default function Leaderboard() {
     );
   }
 
-  return (
-    <div className="space-y-8">
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Global Leaderboard</h1>
-          <p className="text-muted-foreground">The most influential builders and creators on Base.</p>
-        </div>
-        <div className="relative w-full md:w-72">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="Search handle or address..." className="pl-10 bg-card border-border text-foreground" />
-        </div>
-      </header>
+  const topThree = leaderboard.slice(0, 3);
+  const others = leaderboard.slice(3);
+  const currentUserRank = profile ? { rank: profile.poiScore.rank, displayName: 'You', score: profile.poiScore.total, avatarUrl: profile.avatarUrl } : null;
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {leaderboard.slice(0, 3).map((user, idx) => (
-          <Card key={user.displayName} className="border-none shadow-sm relative overflow-hidden bg-card">
-            {idx === 0 && (
-              <div className="absolute top-0 right-0 p-4">
-                <Trophy className="w-12 h-12 text-yellow-400 opacity-20" />
-              </div>
-            )}
-            <CardContent className="pt-6 text-center space-y-4">
-              <div className="relative inline-block">
-                <Avatar className="w-20 h-20 border-4 border-card shadow-md mx-auto">
-                  <AvatarImage src={user.avatarUrl} />
-                  <AvatarFallback>{user.displayName[0]}</AvatarFallback>
+  return (
+    <div className="space-y-6 pb-8">
+      {/* Leaderboard Header */}
+      <div className="space-y-2">
+        <h1 className="text-2xl font-black text-foreground tracking-tight italic">LEADERBOARD</h1>
+        <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+          <span>Weekly Reset</span>
+          <span className="text-primary flex items-center gap-1">
+            <Clock className="w-3 h-3" />
+            2d 14h left
+          </span>
+        </div>
+      </div>
+
+      {/* Top 3 Podium */}
+      <div className="grid grid-cols-3 gap-3 items-end pt-4 pb-2">
+        {[topThree[1], topThree[0], topThree[2]].map((item, i) => {
+          if (!item) return null;
+          const isWinner = item.rank === 1;
+          return (
+            <div key={item.displayName} className="flex flex-col items-center space-y-2">
+              <div className="relative">
+                <Avatar className={cn(
+                  "border-2 shadow-lg",
+                  isWinner ? "w-20 h-20 border-yellow-500 scale-110" : "w-16 h-16 border-muted"
+                )}>
+                  <AvatarImage src={item.avatarUrl} />
+                  <AvatarFallback>{item.displayName[0]}</AvatarFallback>
                 </Avatar>
                 <div className={cn(
-                  "absolute -bottom-1 -right-1 w-8 h-8 rounded-full flex items-center justify-center text-white font-bold border-2 border-card",
-                  idx === 0 ? "bg-yellow-400" : idx === 1 ? "bg-slate-300" : "bg-orange-400"
+                  "absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black border-2 border-card shadow-md",
+                  isWinner ? "bg-yellow-500 text-white" : "bg-muted text-muted-foreground"
                 )}>
-                  {user.rank}
+                  {item.rank}
                 </div>
               </div>
+              <p className="text-[10px] font-bold text-foreground truncate w-full text-center">
+                {item.displayName}
+              </p>
+              <p className="text-xs font-black text-primary">{item.score}</p>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* User's Current Rank */}
+      {currentUserRank && (
+        <Card className="border-none bg-primary/10 border border-primary/20 p-4 rounded-2xl flex items-center justify-between shadow-lg shadow-primary/5">
+          <div className="flex items-center gap-4">
+            <div className="text-xl font-black text-primary italic">#{currentUserRank.rank}</div>
+            <div className="flex items-center gap-3">
+              <Avatar className="w-10 h-10 border-2 border-primary/30">
+                <AvatarImage src={currentUserRank.avatarUrl} />
+                <AvatarFallback>{currentUserRank.displayName[0]}</AvatarFallback>
+              </Avatar>
               <div>
-                <h3 className="font-bold text-lg text-foreground">{user.displayName}</h3>
-                <p className="text-sm text-muted-foreground">@{user.farcasterHandle}</p>
+                <p className="text-sm font-bold text-foreground">You</p>
+                <p className="text-[10px] text-muted-foreground uppercase font-bold">Top 5%</p>
               </div>
-              <div className="pt-2">
-                <Badge variant="secondary" className="text-lg px-4 py-1 bg-primary/10 text-primary border-primary/20">
-                  {user.score} POI
-                </Badge>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="text-sm font-black text-primary">{currentUserRank.score}</p>
+            <p className="text-[10px] text-green-500 font-bold">+12 pts</p>
+          </div>
+        </Card>
+      )}
+
+      {/* Full List */}
+      <div className="space-y-2">
+        {others.map((item) => (
+          <div 
+            key={item.displayName} 
+            className="flex items-center justify-between p-3 rounded-xl bg-card border border-border/50 hover:bg-muted/30 transition-colors"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-6 text-xs font-bold text-muted-foreground italic">#{item.rank}</div>
+              <div className="flex items-center gap-3">
+                <Avatar className="w-8 h-8">
+                  <AvatarImage src={item.avatarUrl} />
+                  <AvatarFallback>{item.displayName[0]}</AvatarFallback>
+                </Avatar>
+                <p className="text-sm font-bold text-foreground">{item.displayName}</p>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+            <div className="text-right">
+              <p className="text-sm font-black text-foreground">{item.score}</p>
+            </div>
+          </div>
         ))}
       </div>
 
-      <Card className="border-none shadow-sm overflow-hidden bg-card">
-        <Table>
-          <TableHeader className="bg-muted/50">
-            <TableRow className="border-border hover:bg-transparent">
-              <TableHead className="w-20 text-center text-muted-foreground">Rank</TableHead>
-              <TableHead className="text-muted-foreground">User</TableHead>
-              <TableHead className="text-muted-foreground">Farcaster</TableHead>
-              <TableHead className="text-right text-muted-foreground">POI Score</TableHead>
-              <TableHead className="w-20 text-muted-foreground"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {leaderboard.map((user) => (
-              <TableRow key={user.displayName} className="hover:bg-accent/50 transition-colors border-border">
-                <TableCell className="text-center font-bold text-muted-foreground">
-                  {user.rank <= 3 ? (
-                    <div className="flex justify-center">
-                       <Medal className={cn(
-                         "w-5 h-5",
-                         user.rank === 1 ? "text-yellow-400" : user.rank === 2 ? "text-slate-300" : "text-orange-400"
-                       )} />
-                    </div>
-                  ) : user.rank}
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                    <Avatar className="w-8 h-8">
-                      <AvatarImage src={user.avatarUrl} />
-                      <AvatarFallback>{user.displayName[0]}</AvatarFallback>
-                    </Avatar>
-                    <span className="font-semibold text-foreground">{user.displayName}</span>
-                  </div>
-                </TableCell>
-                <TableCell className="text-muted-foreground">@{user.farcasterHandle}</TableCell>
-                <TableCell className="text-right font-bold text-primary">{user.score}</TableCell>
-                <TableCell>
-                  <button className="p-2 hover:bg-accent rounded-full transition-colors">
-                    <ExternalLink className="w-4 h-4 text-muted-foreground" />
-                  </button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Card>
+      <Button variant="ghost" className="w-full text-muted-foreground text-[10px] font-bold uppercase tracking-widest">
+        View Full Rankings
+      </Button>
     </div>
   );
 }

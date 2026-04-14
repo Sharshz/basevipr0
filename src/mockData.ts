@@ -68,9 +68,9 @@ export const MOCK_CAMPAIGNS: Campaign[] = [
 ];
 
 export const MOCK_LEADERBOARD: LeaderboardEntry[] = [
-  { rank: 1, displayName: 'Vitalik', farcasterHandle: 'vitalik', score: 99, avatarUrl: 'https://picsum.photos/seed/v/100/100' },
-  { rank: 2, displayName: 'Jesse Pollak', farcasterHandle: 'jesse', score: 98, avatarUrl: 'https://picsum.photos/seed/j/100/100' },
-  { rank: 3, displayName: 'Brian Armstrong', farcasterHandle: 'brian', score: 97, avatarUrl: 'https://picsum.photos/seed/b/100/100' },
-  { rank: 4, displayName: 'Base God', farcasterHandle: 'basegod', score: 95, avatarUrl: 'https://picsum.photos/seed/bg/100/100' },
-  { rank: 5, displayName: 'DeFi Degenerate', farcasterHandle: 'defidegen', score: 92, avatarUrl: 'https://picsum.photos/seed/dd/100/100' },
+  { rank: 1, displayName: 'Vitalik', farcasterHandle: 'vitalik', score: 995, avatarUrl: 'https://picsum.photos/seed/v/100/100' },
+  { rank: 2, displayName: 'Jesse Pollak', farcasterHandle: 'jesse', score: 982, avatarUrl: 'https://picsum.photos/seed/j/100/100' },
+  { rank: 3, displayName: 'Brian Armstrong', farcasterHandle: 'brian', score: 975, avatarUrl: 'https://picsum.photos/seed/b/100/100' },
+  { rank: 4, displayName: 'Base God', farcasterHandle: 'basegod', score: 950, avatarUrl: 'https://picsum.photos/seed/bg/100/100' },
+  { rank: 5, displayName: 'DeFi Degenerate', farcasterHandle: 'defidegen', score: 920, avatarUrl: 'https://picsum.photos/seed/dd/100/100' },
 ];

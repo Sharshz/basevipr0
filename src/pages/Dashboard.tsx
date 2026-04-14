@@ -84,245 +84,111 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="space-y-8">
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Influence Overview</h1>
-          <p className="text-muted-foreground">Real-time analysis of your impact on Base & Farcaster.</p>
+    <div className="space-y-8 pb-8">
+      {/* Ego Hit Section */}
+      <section className="flex flex-col items-center text-center py-10 space-y-6 relative overflow-hidden">
+        <div className="absolute inset-0 bg-primary/5 blur-3xl rounded-full -z-10 animate-pulse"></div>
+        
+        <motion.div
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, type: "spring" }}
+          className="relative"
+        >
+          <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full -z-10"></div>
+          <div className="text-8xl font-black tracking-tighter text-foreground tabular-nums">
+            {poiScore.total}
+          </div>
+        </motion.div>
+
+        <div className="space-y-2">
+          <Badge className="bg-primary/20 text-primary border-primary/30 text-sm px-4 py-1 rounded-full">
+            TOP {100 - poiScore.percentile}% ON BASE
+          </Badge>
+          <p className="text-green-500 font-bold flex items-center justify-center gap-1">
+            <ArrowUpRight className="w-4 h-4" />
+            +32 today
+          </p>
         </div>
-        <div className="flex gap-3">
+
+        <div className="flex gap-4 w-full pt-4">
           <Button 
-            variant="outline" 
-            className="gap-2 border-border"
+            className="flex-1 h-14 bg-primary hover:bg-primary/90 text-white rounded-2xl font-bold text-lg shadow-lg shadow-primary/20"
             onClick={handleShare}
           >
-            <Share2 className="w-4 h-4" />
-            Share
+            <Share2 className="w-5 h-5 mr-2" />
+            Share Score
           </Button>
           <Button 
-            className="gap-2 bg-primary hover:bg-primary/90 text-white"
+            variant="outline"
+            className="w-14 h-14 border-border rounded-2xl flex items-center justify-center"
             onClick={handleSync}
-            disabled={isSyncing || !user}
+            disabled={isSyncing}
           >
-            {isSyncing ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-            Sync Influence
+            {isSyncing ? <Loader2 className="w-6 h-6 animate-spin" /> : <RefreshCw className="w-6 h-6" />}
           </Button>
         </div>
-      </header>
+      </section>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="border-none shadow-sm bg-primary text-primary-foreground overflow-hidden relative">
-          <div className="absolute top-0 right-0 p-4 opacity-20">
-            <Zap className="w-16 h-16 fill-current" />
-          </div>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium opacity-80">POI Score</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold">{poiScore.total}</div>
-            <div className="flex items-center gap-1 mt-1 text-xs font-medium opacity-90">
-              <TrendingUp className="w-3 h-3" />
-              <span>Top {100 - poiScore.percentile}% of users</span>
-            </div>
-          </CardContent>
+      {/* Reputation Breakdown */}
+      <div className="grid grid-cols-2 gap-4">
+        <Card className="border-none bg-card/50 backdrop-blur-sm p-4 space-y-2">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Influence</p>
+          <p className="text-2xl font-black text-foreground">{poiScore.influence}</p>
+          <Progress value={poiScore.influence / 10} className="h-1 bg-muted" />
         </Card>
-
-        <Card className="border-none shadow-sm bg-card">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Global Rank</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold text-foreground">#{poiScore.rank}</div>
-            <div className="flex items-center gap-1 mt-1 text-xs font-medium text-green-500">
-              <ArrowUpRight className="w-3 h-3" />
-              <span>Up 5 spots this week</span>
-            </div>
-          </CardContent>
+        <Card className="border-none bg-card/50 backdrop-blur-sm p-4 space-y-2">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Trust</p>
+          <p className="text-2xl font-black text-foreground">{poiScore.trust}</p>
+          <Progress value={poiScore.trust / 10} className="h-1 bg-muted" />
         </Card>
-
-        <Card className="border-none shadow-sm bg-card">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Network Reach</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold text-foreground">12.4k</div>
-            <div className="flex items-center gap-1 mt-1 text-xs font-medium text-muted-foreground">
-              <Users className="w-3 h-3" />
-              <span>Unique interactions</span>
-            </div>
-          </CardContent>
+        <Card className="border-none bg-card/50 backdrop-blur-sm p-4 space-y-2">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Activity</p>
+          <p className="text-2xl font-black text-foreground">{poiScore.activity}</p>
+          <Progress value={poiScore.activity / 10} className="h-1 bg-muted" />
         </Card>
-
-        <Card className="border-none shadow-sm bg-card">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Onchain Trust</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold text-foreground">{poiScore.trust}</div>
-            <div className="flex items-center gap-1 mt-1 text-xs font-medium text-primary">
-              <ShieldCheck className="w-3 h-3" />
-              <span>Sybil-resistant verified</span>
-            </div>
-          </CardContent>
+        <Card className="border-none bg-card/50 backdrop-blur-sm p-4 space-y-2">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Alpha</p>
+          <p className="text-2xl font-black text-foreground">{poiScore.alpha}</p>
+          <Progress value={poiScore.alpha / 10} className="h-1 bg-muted" />
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <Card className="lg:col-span-2 border-none shadow-sm bg-card">
-          <CardHeader>
-            <CardTitle className="text-foreground">Reputation Timeline</CardTitle>
-            <CardDescription className="text-muted-foreground">Your influence growth over the last 7 days.</CardDescription>
-          </CardHeader>
-          <CardContent className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData}>
-                <defs>
-                  <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#0052FF" stopOpacity={0.2}/>
-                    <stop offset="95%" stopColor="#0052FF" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1F1F1F" />
-                <XAxis 
-                  dataKey="name" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fill: '#A0A0A0', fontSize: 12 }}
-                  dy={10}
-                />
-                <YAxis 
-                  hide 
-                  domain={['dataMin - 5', 'dataMax + 5']}
-                />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#121212',
-                    borderRadius: '8px', 
-                    border: '1px solid #1F1F1F', 
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
-                    color: '#FFFFFF'
-                  }}
-                  itemStyle={{ color: '#0052FF' }}
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="score" 
-                  stroke="#0052FF" 
-                  strokeWidth={3}
-                  fillOpacity={1} 
-                  fill="url(#colorScore)" 
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card className="border-none shadow-sm bg-card">
-          <CardHeader>
-            <CardTitle className="text-foreground">Reputation Breakdown</CardTitle>
-            <CardDescription className="text-muted-foreground">Weighted impact across layers.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="flex items-center gap-2 text-muted-foreground">
-                  <Globe className="w-4 h-4 text-purple-500" />
-                  Influence
-                </span>
-                <span className="font-bold text-foreground">{poiScore.influence}</span>
-              </div>
-              <Progress value={poiScore.influence / 10} className="h-2 bg-muted" />
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="flex items-center gap-2 text-muted-foreground">
-                  <ShieldCheck className="w-4 h-4 text-blue-500" />
-                  Trust
-                </span>
-                <span className="font-bold text-foreground">{poiScore.trust}</span>
-              </div>
-              <Progress value={poiScore.trust / 10} className="h-2 bg-muted" />
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="flex items-center gap-2 text-muted-foreground">
-                  <Activity className="w-4 h-4 text-green-500" />
-                  Activity
-                </span>
-                <span className="font-bold text-foreground">{poiScore.activity}</span>
-              </div>
-              <Progress value={poiScore.activity / 10} className="h-2 bg-muted" />
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="flex items-center gap-2 text-muted-foreground">
-                  <Zap className="w-4 h-4 text-yellow-500" />
-                  Alpha
-                </span>
-                <span className="font-bold text-foreground">{poiScore.alpha}</span>
-              </div>
-              <Progress value={poiScore.alpha / 10} className="h-2 bg-muted" />
-            </div>
-
-            <div className="pt-4 mt-4 border-t border-border">
-              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <TrendingUp className="w-4 h-4 text-primary" />
-                  </div>
-                  <div className="text-xs">
-                    <p className="font-semibold text-foreground">Improving Fast</p>
-                    <p className="text-muted-foreground">Keep casting to boost social</p>
-                  </div>
-                </div>
-                <Badge variant="outline" className="bg-card border-border text-foreground">Next: 850</Badge>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
+      {/* Proof Feed */}
       <Card className="border-none shadow-sm bg-card">
-        <CardHeader>
-          <CardTitle className="text-foreground flex items-center gap-2">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg flex items-center gap-2">
             <Activity className="w-5 h-5 text-primary" />
             Proof Feed
           </CardTitle>
-          <CardDescription className="text-muted-foreground">Recent onchain actions attributed to your influence.</CardDescription>
+          <CardDescription className="text-xs">Recent onchain actions attributed to you.</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
+        <CardContent className="px-2">
+          <div className="space-y-2">
             {[
-              { type: 'mint', user: '0x71...2a', action: 'Minted "Base Summer" NFT', points: '+20', time: '2m ago' },
-              { type: 'swap', user: '0x34...1b', action: 'Swapped 0.5 ETH for $DEGEN', points: '+25', time: '15m ago' },
-              { type: 'referral', user: 'farcaster_user', action: 'Joined POI via your link', points: '+50', time: '1h ago' },
-              { type: 'interaction', user: 'whale_wallet', action: 'Recasted your latest post', points: '+100', time: '3h ago' },
+              { type: 'mint', user: '0x71...2a', action: 'Minted "Base Summer"', points: '+20', time: '2m ago' },
+              { type: 'swap', user: '0x34...1b', action: 'Swapped ETH for $DEGEN', points: '+25', time: '15m ago' },
+              { type: 'referral', user: 'farcaster_user', action: 'Joined via your link', points: '+50', time: '1h ago' },
             ].map((item, i) => (
-              <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-muted/30 border border-border hover:bg-muted/50 transition-colors">
-                <div className="flex items-center gap-4">
+              <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-muted/20 border border-border/50">
+                <div className="flex items-center gap-3">
                   <div className={cn(
-                    "w-10 h-10 rounded-full flex items-center justify-center",
+                    "w-8 h-8 rounded-full flex items-center justify-center",
                     item.type === 'mint' ? "bg-blue-500/10 text-blue-500" :
                     item.type === 'swap' ? "bg-green-500/10 text-green-500" :
-                    item.type === 'referral' ? "bg-purple-500/10 text-purple-500" :
-                    "bg-yellow-500/10 text-yellow-500"
+                    "bg-purple-500/10 text-purple-500"
                   )}>
-                    {item.type === 'mint' ? <Zap className="w-5 h-5" /> :
-                     item.type === 'swap' ? <RefreshCw className="w-5 h-5" /> :
-                     item.type === 'referral' ? <Users className="w-5 h-5" /> :
-                     <ArrowUpRight className="w-5 h-5" />}
+                    {item.type === 'mint' ? <Zap className="w-4 h-4" /> :
+                     item.type === 'swap' ? <RefreshCw className="w-4 h-4" /> :
+                     <Users className="w-4 h-4" />}
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-foreground">{item.action}</p>
-                    <p className="text-xs text-muted-foreground">By {item.user} • {item.time}</p>
+                    <p className="text-xs font-bold text-foreground">{item.action}</p>
+                    <p className="text-[10px] text-muted-foreground">{item.time}</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-bold text-primary">{item.points} POI</p>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Verified</p>
+                  <p className="text-xs font-bold text-primary">{item.points}</p>
                 </div>
               </div>
             ))}

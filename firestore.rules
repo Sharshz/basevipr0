@@ -15,10 +15,11 @@ service cloud.firestore {
     //   - address: string (optional, size < 64)
     //   - avatarUrl: string (optional, URL)
     //   - poiScore: map (required)
-    //     - total: number (0-100)
-    //     - social: number (0-100)
-    //     - onchain: number (0-100)
-    //     - network: number (0-100)
+    //     - total: number (0-1000)
+    //     - influence: number (0-1000)
+    //     - trust: number (0-1000)
+    //     - activity: number (0-1000)
+    //     - alpha: number (0-1000)
     //     - trend: string (enum: up, down, stable)
     //     - rank: number
     //     - percentile: number
@@ -80,7 +81,11 @@ service cloud.firestore {
              (!('farcasterHandle' in data) || (data.farcasterHandle is string && data.farcasterHandle.size() < 30)) &&
              (!('avatarUrl' in data) || isValidUrl(data.avatarUrl)) &&
              data.poiScore is map &&
-             data.poiScore.total is number && data.poiScore.total >= 0 && data.poiScore.total <= 100 &&
+             data.poiScore.total is number && data.poiScore.total >= 0 && data.poiScore.total <= 1000 &&
+             data.poiScore.influence is number &&
+             data.poiScore.trust is number &&
+             data.poiScore.activity is number &&
+             data.poiScore.alpha is number &&
              data.role in ['user', 'admin'] &&
              data.createdAt is timestamp;
     }
@@ -96,9 +101,8 @@ service cloud.firestore {
     // ===============================================================
 
     match /users/{userId} {
-      // Users can read their own profile. Public profiles allowed but restricted fields.
-      // For this app, we allow reading other users' POI scores for the leaderboard.
-      allow read: if isAuthenticated();
+      // Users can read all profiles for the leaderboard.
+      allow read: if true;
       
       // Only the owner can create their profile, and they must start as 'user' role.
       allow create: if isOwner(userId) && 
@@ -115,7 +119,7 @@ service cloud.firestore {
     }
 
     match /campaigns/{campaignId} {
-      allow read: if isAuthenticated();
+      allow read: if true;
       allow write: if isAdmin();
     }
   }

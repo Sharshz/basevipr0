@@ -50,13 +50,11 @@ export default function Header() {
 
         {user ? (
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-2 pl-2 border-l border-border ml-1">
-                <Avatar className="w-7 h-7">
-                  <AvatarImage src={profile?.avatarUrl || user.photoURL || undefined} />
-                  <AvatarFallback>{user.displayName?.[0] || 'U'}</AvatarFallback>
-                </Avatar>
-              </button>
+            <DropdownMenuTrigger className="flex items-center gap-2 pl-2 border-l border-border ml-1 outline-none">
+              <Avatar className="w-7 h-7">
+                <AvatarImage src={profile?.avatarUrl || user.photoURL || undefined} />
+                <AvatarFallback>{user.displayName?.[0] || 'U'}</AvatarFallback>
+              </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 bg-card border-border">
               <DropdownMenuLabel className="text-foreground">
