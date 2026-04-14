@@ -1,0 +1,122 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: {userId} (Firebase Auth UID)
+    // Fields:
+    //   - uid: string (required)
+    //   - displayName: string (required, size < 50)
+    //   - farcasterHandle: string (optional, size < 30)
+    //   - address: string (optional, size < 64)
+    //   - avatarUrl: string (optional, URL)
+    //   - poiScore: map (required)
+    //     - total: number (0-100)
+    //     - social: number (0-100)
+    //     - onchain: number (0-100)
+    //     - network: number (0-100)
+    //     - trend: string (enum: up, down, stable)
+    //     - rank: number
+    //     - percentile: number
+    //   - badges: list (optional)
+    //   - role: string (required, enum: user, admin)
+    //   - createdAt: timestamp (required)
+    //
+    // Collection: campaigns
+    // Document ID: {campaignId}
+    // Fields:
+    //   - id: string
+    //   - title: string
+    //   - description: string
+    //   - reward: string
+    //   - minPOI: number
+    //   - status: string (enum: active, completed)
+    //   - participants: number
+    //   - imageUrl: string
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+         (request.auth.token.email == "sininmicrosoft@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isValidUrl(url) {
+      return url is string && (url.matches("^https://.*") || url.matches("^http://.*"));
+    }
+
+    function hasOnlyAllowedFields(data, allowedFields) {
+      return data.keys().hasOnly(allowedFields);
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidUser(data) {
+      return data.uid is string &&
+             data.displayName is string && data.displayName.size() > 0 && data.displayName.size() < 50 &&
+             (!('farcasterHandle' in data) || (data.farcasterHandle is string && data.farcasterHandle.size() < 30)) &&
+             (!('avatarUrl' in data) || isValidUrl(data.avatarUrl)) &&
+             data.poiScore is map &&
+             data.poiScore.total is number && data.poiScore.total >= 0 && data.poiScore.total <= 100 &&
+             data.role in ['user', 'admin'] &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidCampaign(data) {
+      return data.title is string && data.title.size() > 0 &&
+             data.minPOI is number && data.minPOI >= 0 &&
+             data.status in ['active', 'completed'];
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      // Users can read their own profile. Public profiles allowed but restricted fields.
+      // For this app, we allow reading other users' POI scores for the leaderboard.
+      allow read: if isAuthenticated();
+      
+      // Only the owner can create their profile, and they must start as 'user' role.
+      allow create: if isOwner(userId) && 
+                      isValidUser(request.resource.data) && 
+                      request.resource.data.role == 'user';
+      
+      // Only owner or admin can update. Owner cannot change their role.
+      allow update: if (isOwner(userId) && 
+                        isValidUser(request.resource.data) && 
+                        request.resource.data.role == resource.data.role) || 
+                       isAdmin();
+      
+      allow delete: if isAdmin();
+    }
+
+    match /campaigns/{campaignId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+  }
+}

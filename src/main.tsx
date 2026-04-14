@@ -3,11 +3,17 @@ import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 import { Web3Provider } from './components/Web3Provider.tsx';
+import { AuthProvider } from './context/AuthContext.tsx';
+import { ErrorBoundary } from './components/ErrorBoundary.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <Web3Provider>
-      <App />
-    </Web3Provider>
+    <ErrorBoundary>
+      <Web3Provider>
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      </Web3Provider>
+    </ErrorBoundary>
   </StrictMode>,
 );

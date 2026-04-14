@@ -1,0 +1,73 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Stores user influence scores and profile information.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "displayName": { "type": "string" },
+        "farcasterHandle": { "type": "string" },
+        "address": { "type": "string" },
+        "avatarUrl": { "type": "string" },
+        "poiScore": {
+          "type": "object",
+          "properties": {
+            "total": { "type": "number" },
+            "social": { "type": "number" },
+            "onchain": { "type": "number" },
+            "network": { "type": "number" },
+            "trend": { "type": "string", "enum": ["up", "down", "stable"] },
+            "rank": { "type": "number" },
+            "percentile": { "type": "number" }
+          }
+        },
+        "badges": {
+          "type": "array",
+          "items": { "$ref": "Badge" }
+        },
+        "role": { "type": "string", "enum": ["user", "admin"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "displayName", "poiScore"]
+    },
+    "Badge": {
+      "title": "Badge",
+      "description": "Represents an achievement or milestone.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "tier": { "type": "string", "enum": ["bronze", "silver", "gold", "platinum"] },
+        "dateEarned": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Campaign": {
+      "title": "Campaign",
+      "description": "A reward campaign for influential users.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "reward": { "type": "string" },
+        "minPOI": { "type": "number" },
+        "status": { "type": "string", "enum": ["active", "completed"] },
+        "participants": { "type": "number" },
+        "imageUrl": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile data"
+    },
+    "/campaigns/{campaignId}": {
+      "schema": "Campaign",
+      "description": "Campaign data"
+    }
+  }
+}
